@@ -39,7 +39,9 @@ namespace RunawaySystems.Pong {
         }
 
         public override void OnSimulationTick(float timeDelta) {
-            Position += Velocity * timeDelta;
+            float x = Position.X + (Velocity.X * timeDelta);
+            float y = Position.Y + (Velocity.Y * timeDelta);
+            Position = new WorldSpacePosition(x, y);
             // clamp position to screen edges, drop velocity to 0 if we've hit an edge
 
             Velocity /= timeDelta * Friction;

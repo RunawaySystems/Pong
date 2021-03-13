@@ -12,7 +12,7 @@ namespace RunawaySystems.Pong {
 
         // state
         /// <summary> Holds each renderable object with their position last frame. </summary>
-        private static Dictionary<IRenderable, WorldSpacePosition> renderableObjects;
+        private static List<IRenderable> renderableObjects;
         public static (int X, int Y) GameplayRegion { get; private set; }
 
         /// <summary> Last drawn line number. </summary>
@@ -25,7 +25,7 @@ namespace RunawaySystems.Pong {
         public static RenderContext TerminalWindow;
 
         static Renderer() {
-            renderableObjects = new Dictionary<IRenderable, WorldSpacePosition>();
+            renderableObjects = new List<IRenderable>();
             clock = new Engine(targetFrequency: 60f);
             clock.Tick += Tick;
 
@@ -49,7 +49,7 @@ namespace RunawaySystems.Pong {
         }
 
         public static void Register(IRenderable renderable) {
-            renderableObjects.Add(renderable, renderable.Position);
+            renderableObjects.Add(renderable);
         }
 
         public static void UnRegister(IRenderable renderable) {
@@ -57,28 +57,25 @@ namespace RunawaySystems.Pong {
         }
 
         private static void Tick(float timeDelta) {
-            // we're probably going to need to clear the playing field at the start of every frame, it causes flickering right now though.
-            PlayingFieldWindow.Clear();
 
-            foreach (KeyValuePair<IRenderable, WorldSpacePosition> renderable in renderableObjects) {
-                PlayingFieldWindow.Set(renderable.Key);
-
-                /* this optimization isn't ready yet.
-                // if a renderable object hasn't moved, it's already on the screen.
-                if (renderable.Key.Position == renderable.Value) 
-                    continue;
-
-                // update our known position for the renderable in the dictionary and on the screen.
-                renderableObjects.Remove(renderable.Key);
-                renderableObjects.Add(renderable.Key, renderable.Key.Position);
-                PlayingFieldWindow.Set(renderable.Key);
-                */
-            }
-
-            PlayingFieldWindow.Draw();
+            RenderPlayingField();
 
             if (TerminalWindow.IsDirty)
                 TerminalWindow.Draw();
+        }
+
+        private static void RenderPlayingField() {
+            // we're probably going to need to clear the playing field at the start of every frame, it causes flickering right now though.
+            // double buffering might solve this.
+            PlayingFieldWindow.Clear();
+
+            Geometry.Rectangle visibleWorldSpace = PlayingFieldWindow.GetRenderableArea();
+            foreach (var renderable in renderableObjects) {
+                //if (visibleWorldSpace.Contains(renderable.Position))
+                PlayingFieldWindow.Set(renderable);
+            }
+
+            PlayingFieldWindow.Draw();
         }
     }
 }

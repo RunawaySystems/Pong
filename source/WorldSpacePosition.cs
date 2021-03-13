@@ -1,6 +1,9 @@
 ﻿using System.Numerics;
 
 namespace RunawaySystems.Pong {
+    /// <summary> 
+    /// A position inside the game world. Either in local space to some <see cref="GameObject"/>, or in global space. (local relative to the origin)
+    /// </summary>
     public struct WorldSpacePosition {
         public float X;
         public float Y;
@@ -19,11 +22,11 @@ namespace RunawaySystems.Pong {
         public static WorldSpacePosition operator *(WorldSpacePosition a, WorldSpacePosition b)  => new WorldSpacePosition(a.X * b.X, a.Y * b.Y);
         public static WorldSpacePosition operator *(WorldSpacePosition a, float b) => new WorldSpacePosition(a.X * b, a.Y * b);
 
-        public static implicit operator WorldSpacePosition(Vector2 position) => new WorldSpacePosition(position.X, position.Y);
+        public static implicit operator Vector2(WorldSpacePosition position) => new Vector2(position.X, position.Y);
 
         public Vector2 ToVector2() => new Vector2(X, Y);
 
-        /// <summary> Gives you coordinates in local space relative to the given <see cref="RenderContext"/>. </summary>
+       /// <summary> Gives you coordinates in local space relative to the given <see cref="RenderContext"/>. </summary>
        public ConsoleSpacePosition ToConsoleSpacePosition(RenderContext window) {
 
             // scale world coordinates to console coordinates

@@ -13,5 +13,23 @@ namespace RunawaySystems.Pong {
             X = x;
             Y = y;
         }
+
+        public static implicit operator Vector2(ConsoleSpacePosition position) => new Vector2(position.X, position.Y);
+
+
+        /// <summary> Gives you coordinates in local space relative to the given <see cref="RenderContext"/>. </summary>
+        public WorldSpacePosition ToWorldSpacePosition(RenderContext window) {
+
+            // offset by rendering context size
+            float x = X - (window.Size.Width / 2f);
+            float y = Y - (window.Size.Height / 2f);
+
+            // scale console space position to world space position
+            x /= MetersPerConsoleUnit.X;
+            y /= -MetersPerConsoleUnit.Y; // Y space is inverted between these two coordinate systems
+
+
+            return new WorldSpacePosition(x, y);
+        }
     }
 }

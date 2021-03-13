@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Numerics;
+using RunawaySystems.Pong.Geometry;
 
 namespace RunawaySystems.Pong {
     public class RenderContext {
@@ -133,6 +135,16 @@ namespace RunawaySystems.Pong {
                 Set(x, y, '│');
 
             IsDirty = true;
+        }
+
+        /// <summary> World space region that can currently be drawn to this <see cref="RenderContext"/>. </summary>
+        public Rectangle GetRenderableArea() {
+            var renderableTopLeft = new ConsoleSpacePosition(0, 0).ToWorldSpacePosition(this);
+            var renderableSize = new ConsoleSpacePosition(Size.Width, Size.Height).ToWorldSpacePosition(this);
+
+            return new Rectangle(
+                        position: new Vector2(renderableTopLeft.X, renderableTopLeft.Y),
+                        size: new Vector2(renderableSize.X, renderableSize.Y));
         }
     }
 
