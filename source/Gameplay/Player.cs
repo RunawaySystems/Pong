@@ -5,8 +5,8 @@ using System.Numerics;
 namespace RunawaySystems.Pong {
 
     public class Player : GameObject, IRenderable {
-        const float movementIntensity = 1f;
-        const float Friction = 0.01f;
+        const float movementIntensity = 0.01f;
+        const float Friction = 0.02f;
 
         public string Sprite { get; private set; }
         public WorldSpacePosition Position { get; set; }
@@ -22,7 +22,7 @@ namespace RunawaySystems.Pong {
                 builder.AppendLine("┌─┐");
                 for (int i = 0; i < paddleLength; ++i)
                     builder.AppendLine("│░│");
-                builder.AppendLine("└─┘");
+                builder.Append("└─┘");
 
                 Sprite = builder.ToString();
             }
@@ -30,6 +30,7 @@ namespace RunawaySystems.Pong {
 
         public Player() {
             PaddleLength = 3;
+            Sprite = "xxx";
             InputManager.MovementInput += OnMovementInputReceived;
         }
 
@@ -39,7 +40,9 @@ namespace RunawaySystems.Pong {
 
         public override void OnSimulationTick(float timeDelta) {
             Position += Velocity * timeDelta;
-            Velocity -= Velocity * Friction;
+            // clamp position to screen edges, drop velocity to 0 if we've hit an edge
+
+            Velocity /= timeDelta * Friction;
         }
     }
 }

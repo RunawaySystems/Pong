@@ -12,8 +12,8 @@ namespace RunawaySystems.Pong {
                                       @"    \|__|       \|_______|  \|__| \|__|  \|_______|  \|__|  " + "\n";
 
         public static void Open() {
-            Renderer.DrawCentered(Renderer.PlayingFieldWindow, 0, title);
-            //DrawMenu(Renderer.PlayingFieldWindow, 24, new [] { "Single Player", "Multiplayer Host", "Multiplayer Join", "Quit" }, 0);
+            Renderer.PlayingFieldWindow.DrawCentered(0, title);
+           // DrawMenu(Renderer.PlayingFieldWindow, 24, new [] { "Single Player", "Multiplayer Host", "Multiplayer Join", "Quit" }, 0);
         }
 
         public static void DrawMenu(RenderContext window, int width, string[] items, int activeItem) {
@@ -51,7 +51,7 @@ namespace RunawaySystems.Pong {
             builder.Append('└').Append('─', interiorWidth).Append('┘');
 
 
-            Renderer.DrawCentered(window, 9, builder.ToString());
+            window.DrawCentered(9, builder.ToString());
         }
     }
 }

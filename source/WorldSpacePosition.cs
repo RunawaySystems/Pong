@@ -10,6 +10,9 @@ namespace RunawaySystems.Pong {
             Y = y;
         }
 
+        public static bool operator ==(WorldSpacePosition a, WorldSpacePosition b) => a.X == b.X && a.Y == b.Y;
+        public static bool operator !=(WorldSpacePosition a, WorldSpacePosition b) => a.X != b.X || a.Y != b.Y;
+
         public static WorldSpacePosition operator +(WorldSpacePosition a, WorldSpacePosition b) => new WorldSpacePosition(a.X + b.X, a.Y + b.Y);
         public static WorldSpacePosition operator -(WorldSpacePosition a, WorldSpacePosition b) => new WorldSpacePosition(a.X - b.X, a.Y - b.Y);
         public static WorldSpacePosition operator /(WorldSpacePosition a, WorldSpacePosition b)  => new WorldSpacePosition(a.X / b.X, a.Y / b.Y);

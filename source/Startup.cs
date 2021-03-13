@@ -5,6 +5,9 @@ namespace RunawaySystems.Pong {
             InputManager.Start();
             MainMenu.Open();
             Simulation.Start();
+            Renderer.Start();
+
+            var player = new Player();
 
             while (true) {
                 System.Threading.Thread.Sleep(1000);

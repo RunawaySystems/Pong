@@ -4,12 +4,16 @@ namespace RunawaySystems.Pong {
 
         public GameObject() {
             Simulation.Register(this);
-            // register with the renderer
+
+            if (this is IRenderable renderable)
+                Renderer.Register(renderable);
         }
 
         public void Destroy() {
             Simulation.Unregister(this);
-            // remove from the renderer
+
+            if (this is IRenderable renderable)
+                Renderer.UnRegister(renderable);
         }
 
 

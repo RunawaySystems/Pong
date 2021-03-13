@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace RunawaySystems.Pong {
@@ -7,8 +8,11 @@ namespace RunawaySystems.Pong {
         /// <summary> Portion of the window used for gameplay. </summary>
         private const float gameplayAreaPercentage = 0.7f;
 
+        private static Engine clock;
 
         // state
+        /// <summary> Holds each renderable object with their position last frame. </summary>
+        private static Dictionary<IRenderable, WorldSpacePosition> renderableObjects;
         public static (int X, int Y) GameplayRegion { get; private set; }
 
         /// <summary> Last drawn line number. </summary>
@@ -21,6 +25,10 @@ namespace RunawaySystems.Pong {
         public static RenderContext TerminalWindow;
 
         static Renderer() {
+            renderableObjects = new Dictionary<IRenderable, WorldSpacePosition>();
+            clock = new Engine(targetFrequency: 60f);
+            clock.Tick += Tick;
+
             Console.WindowWidth = 240;
             Console.WindowHeight = 67;
             gameplayDividerLine = (int)(Console.WindowHeight * gameplayAreaPercentage);
@@ -29,65 +37,48 @@ namespace RunawaySystems.Pong {
             Console.ForegroundColor = ConsoleColor.Green;
 
             PlayingFieldWindow = new RenderContext(0, 0, gameplayDividerLine - 1, Console.WindowWidth);
-            DrawPlusAtCenter(PlayingFieldWindow);
+            //DrawPlusAtCenter(PlayingFieldWindow);
 
             TerminalWindow = new RenderContext(0, gameplayDividerLine, Console.WindowHeight - gameplayDividerLine, Console.WindowWidth);
-            DrawPlusAtCenter(TerminalWindow);
-            DrawHorizontalLine(TerminalWindow, 0, 0, TerminalWindow.Size.Width);
+            //DrawPlusAtCenter(TerminalWindow);
+            TerminalWindow.DrawHorizontalLine(0, 0, TerminalWindow.Size.Width);
         }
 
-        public static void DrawCentered(RenderContext window, int beginY, string text) {
-            string[] lines = text.Split('\n');
+        public static void Start() {
+            clock.Start();
+        }
 
-            uint longestLineLength = 0;
-            foreach (string line in lines) {
-                if (line.Length > longestLineLength)
-                    longestLineLength = (uint)line.Length;
+        public static void Register(IRenderable renderable) {
+            renderableObjects.Add(renderable, renderable.Position);
+        }
+
+        public static void UnRegister(IRenderable renderable) {
+            renderableObjects.Remove(renderable);
+        }
+
+        private static void Tick(float timeDelta) {
+            // we're probably going to need to clear the playing field at the start of every frame, it causes flickering right now though.
+            PlayingFieldWindow.Clear();
+
+            foreach (KeyValuePair<IRenderable, WorldSpacePosition> renderable in renderableObjects) {
+                PlayingFieldWindow.Set(renderable.Key);
+
+                /* this optimization isn't ready yet.
+                // if a renderable object hasn't moved, it's already on the screen.
+                if (renderable.Key.Position == renderable.Value) 
+                    continue;
+
+                // update our known position for the renderable in the dictionary and on the screen.
+                renderableObjects.Remove(renderable.Key);
+                renderableObjects.Add(renderable.Key, renderable.Key.Position);
+                PlayingFieldWindow.Set(renderable.Key);
+                */
             }
 
-            for (int textLine = 0; textLine < lines.Length; ++textLine) 
-                window.Set((int)(window.Size.Width / 2f) - (int)(longestLineLength / 2f), beginY + textLine, lines[textLine]);
+            PlayingFieldWindow.Draw();
 
-            window.Draw();
-        }
-
-        public static void Render(IRenderable renderable) {
-            string[] lines = renderable.Sprite.Split('\n');
-
-            lineNumber = (int)renderable.Position.Y;
-            for (int textLine = 0; textLine < lines.Length; ++textLine) {
-                Console.SetCursorPosition((int)renderable.Position.X, lineNumber++);
-                Console.Write(lines[textLine]);
-            }
-        }
-
-        public static void DrawHorizontalLine(RenderContext window, int xBegin, int y, int width) {
-            for (int x = xBegin; x < width; ++x)
-                window.Set(x, y, '─');
-
-            window.Draw();
-        }
-
-        public static void DrawVerticalLine(RenderContext window, int x, int yBegin, int height) {
-            for (int y = yBegin; y < height; ++y)
-                window.Set(x, y, '│');
-        }
-
-
-        public static void DrawPlusAtCenter(RenderContext window) {
-
-            var left = new WorldSpacePosition(-4, 0).ToConsoleSpacePosition(window);
-            var center = new WorldSpacePosition(0, 0).ToConsoleSpacePosition(window);
-            var right = new WorldSpacePosition(4, 0).ToConsoleSpacePosition(window);
-            var top = new WorldSpacePosition(0, 4).ToConsoleSpacePosition(window);
-            var bottom = new WorldSpacePosition(0, -4).ToConsoleSpacePosition(window);
-
-            PlayingFieldWindow.Set(left.X, left.Y, 'L')
-                        .Set(center.X, center.Y, 'C')
-                        .Set(right.X, right.Y, 'R')
-                        .Set(top.X, top.Y, 'T')
-                        .Set(bottom.X, bottom.Y, 'B')
-                        .Draw();
+            if (TerminalWindow.IsDirty)
+                TerminalWindow.Draw();
         }
     }
 }

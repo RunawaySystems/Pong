@@ -30,7 +30,7 @@ namespace RunawaySystems.Pong {
                     switch (keyInfo.Key) {
                         case ConsoleKey.W:
                         case ConsoleKey.UpArrow:
-                            MovementInput?.Invoke(-1f);
+                            MovementInput?.Invoke(1f);
                             break;
                         case ConsoleKey.S:
                         case ConsoleKey.DownArrow:
