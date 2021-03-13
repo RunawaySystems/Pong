@@ -3,13 +3,11 @@ namespace RunawaySystems.Pong {
     class Startup {
         static void Main(string[] args) {
             InputManager.Start();
-            //MainMenu.Open();
+            MainMenu.Open();
             Simulation.Start();
 
-            var player = new Player();
-
             while (true) {
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(1000);
             }
         }
     }

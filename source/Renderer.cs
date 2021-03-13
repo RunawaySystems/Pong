@@ -17,42 +17,38 @@ namespace RunawaySystems.Pong {
         /// <summary> Line number where we split rendering of the game and console logging. </summary>
         private static int gameplayDividerLine;
 
-        private static RenderContext PlayingField;
+        public static RenderContext PlayingFieldWindow;
+        public static RenderContext TerminalWindow;
 
         static Renderer() {
-            Console.WindowWidth = Console.WindowWidth;
-            Console.WindowHeight = Console.WindowHeight ;
+            Console.WindowWidth = 240;
+            Console.WindowHeight = 67;
             gameplayDividerLine = (int)(Console.WindowHeight * gameplayAreaPercentage);
 
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.Green;
 
-            PlayingField = new RenderContext(0, 0, gameplayDividerLine - 1, Console.WindowWidth);
-            DrawPlusAtCenter(PlayingField);
+            PlayingFieldWindow = new RenderContext(0, 0, gameplayDividerLine - 1, Console.WindowWidth);
+            DrawPlusAtCenter(PlayingFieldWindow);
 
-            DrawGameplayDivider();
+            TerminalWindow = new RenderContext(0, gameplayDividerLine, Console.WindowHeight - gameplayDividerLine, Console.WindowWidth);
+            DrawPlusAtCenter(TerminalWindow);
+            DrawHorizontalLine(TerminalWindow, 0, 0, TerminalWindow.Size.Width);
         }
 
-        public static void Clear() {
-            Console.Clear();
-            DrawGameplayDivider();
-        }
-
-        
-        public static void PrintCentered(string text) {
+        public static void DrawCentered(RenderContext window, int beginY, string text) {
             string[] lines = text.Split('\n');
 
             uint longestLineLength = 0;
-            foreach(string line in lines) {
-                if(line.Length > longestLineLength)
+            foreach (string line in lines) {
+                if (line.Length > longestLineLength)
                     longestLineLength = (uint)line.Length;
             }
 
+            for (int textLine = 0; textLine < lines.Length; ++textLine) 
+                window.Set((int)(window.Size.Width / 2f) - (int)(longestLineLength / 2f), beginY + textLine, lines[textLine]);
 
-            for(int textLine = 0; textLine < lines.Length; ++textLine) {
-                Console.SetCursorPosition((int)(Console.WindowWidth / 2f) - (int)(longestLineLength / 2f), lineNumber++);
-                Console.Write(lines[textLine]);
-            }
+            window.Draw();
         }
 
         public static void Render(IRenderable renderable) {
@@ -65,12 +61,18 @@ namespace RunawaySystems.Pong {
             }
         }
 
-        public static void DrawGameplayDivider() {
-            Console.SetCursorPosition(0, gameplayDividerLine);
-            var builder = new StringBuilder();
-            builder.Append('─', Console.WindowWidth);
-            Console.Write(builder.ToString());
+        public static void DrawHorizontalLine(RenderContext window, int xBegin, int y, int width) {
+            for (int x = xBegin; x < width; ++x)
+                window.Set(x, y, '─');
+
+            window.Draw();
         }
+
+        public static void DrawVerticalLine(RenderContext window, int x, int yBegin, int height) {
+            for (int y = yBegin; y < height; ++y)
+                window.Set(x, y, '│');
+        }
+
 
         public static void DrawPlusAtCenter(RenderContext window) {
 
@@ -80,13 +82,12 @@ namespace RunawaySystems.Pong {
             var top = new WorldSpacePosition(0, 4).ToConsoleSpacePosition(window);
             var bottom = new WorldSpacePosition(0, -4).ToConsoleSpacePosition(window);
 
-            PlayingField.Set(left.X, left.Y, 'L')
+            PlayingFieldWindow.Set(left.X, left.Y, 'L')
                         .Set(center.X, center.Y, 'C')
                         .Set(right.X, right.Y, 'R')
                         .Set(top.X, top.Y, 'T')
                         .Set(bottom.X, bottom.Y, 'B')
                         .Draw();
         }
-
     }
 }
