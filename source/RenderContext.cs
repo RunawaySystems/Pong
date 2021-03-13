@@ -17,7 +17,11 @@ namespace RunawaySystems.Pong {
             buffer = CreateBuffer();
         }
 
-        private char[] CreateBuffer() => new char[Size.Height * Size.Width];
+        private char[] CreateBuffer() {
+            var buffer = new char[Size.Height * Size.Width];
+            Array.Fill<char>(buffer, ' ');
+            return buffer;
+        }
             
         public RenderContext Clear() {
             buffer = CreateBuffer();

@@ -20,7 +20,7 @@ namespace RunawaySystems.Pong {
                 var builder = new StringBuilder();
 
                 builder.AppendLine("┌─┐");
-                for(int i = 0; i < paddleLength; ++i)
+                for (int i = 0; i < paddleLength; ++i)
                     builder.AppendLine("│░│");
                 builder.AppendLine("└─┘");
 
@@ -40,8 +40,6 @@ namespace RunawaySystems.Pong {
         public override void OnSimulationTick(float timeDelta) {
             Position += Velocity * timeDelta;
             Velocity -= Velocity * Friction;
-
-            Renderer.Render(this);
         }
     }
 }

@@ -15,15 +15,20 @@ namespace RunawaySystems.Pong {
         private static int lineNumber = 0;
 
         /// <summary> Line number where we split rendering of the game and console logging. </summary>
-        private static int gameplayDeviderLine;
+        private static int gameplayDividerLine;
+
+        private static RenderContext PlayingField;
 
         static Renderer() {
-            Console.WindowWidth = Console.WindowWidth ;
+            Console.WindowWidth = Console.WindowWidth;
             Console.WindowHeight = Console.WindowHeight ;
-            gameplayDeviderLine = (int)(Console.WindowHeight * gameplayAreaPercentage);
+            gameplayDividerLine = (int)(Console.WindowHeight * gameplayAreaPercentage);
 
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.Green;
+
+            PlayingField = new RenderContext(0, 0, gameplayDividerLine - 1, Console.WindowWidth);
+            DrawPlusAtCenter(PlayingField);
 
             DrawGameplayDivider();
         }
@@ -34,7 +39,6 @@ namespace RunawaySystems.Pong {
         }
 
         
-
         public static void PrintCentered(string text) {
             string[] lines = text.Split('\n');
 
@@ -62,10 +66,27 @@ namespace RunawaySystems.Pong {
         }
 
         public static void DrawGameplayDivider() {
-            Console.SetCursorPosition(0, gameplayDeviderLine);
+            Console.SetCursorPosition(0, gameplayDividerLine);
             var builder = new StringBuilder();
             builder.Append('─', Console.WindowWidth);
             Console.Write(builder.ToString());
         }
+
+        public static void DrawPlusAtCenter(RenderContext window) {
+
+            var left = new WorldSpacePosition(-4, 0).ToConsoleSpacePosition(window);
+            var center = new WorldSpacePosition(0, 0).ToConsoleSpacePosition(window);
+            var right = new WorldSpacePosition(4, 0).ToConsoleSpacePosition(window);
+            var top = new WorldSpacePosition(0, 4).ToConsoleSpacePosition(window);
+            var bottom = new WorldSpacePosition(0, -4).ToConsoleSpacePosition(window);
+
+            PlayingField.Set(left.X, left.Y, 'L')
+                        .Set(center.X, center.Y, 'C')
+                        .Set(right.X, right.Y, 'R')
+                        .Set(top.X, top.Y, 'T')
+                        .Set(bottom.X, bottom.Y, 'B')
+                        .Draw();
+        }
+
     }
 }

@@ -3,7 +3,7 @@ namespace RunawaySystems.Pong {
     class Startup {
         static void Main(string[] args) {
             InputManager.Start();
-            MainMenu.Open();
+            //MainMenu.Open();
             Simulation.Start();
 
             var player = new Player();
