@@ -28,9 +28,9 @@ namespace RunawaySystems.Pong {
             }
         }
 
-        public Player() {
-            PaddleLength = 3;
-            Sprite = "xxx";
+        public Player(WorldSpacePosition position, uint paddleLength = 3) {
+            Position = position;
+            PaddleLength = paddleLength;
             InputManager.MovementInput += OnMovementInputReceived;
         }
 

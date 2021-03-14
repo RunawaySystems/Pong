@@ -12,6 +12,8 @@ namespace RunawaySystems.Pong {
 
         private char[] buffer;
 
+        private static char[] illegalNewlineCharacters = { '\n', '\r' };
+
         public RenderContext(int x, int y, int height, int width) {
             Position = (x, y);
             Size = (height, width);
@@ -41,7 +43,11 @@ namespace RunawaySystems.Pong {
         /// x, and y are a local <see cref="ConsoleSpacePosition"/>.
         /// </summary>
         public RenderContext Set(int x, int y, char @char) {
-            buffer[CalculateIndex(x, y)] = @char;
+            int index = CalculateIndex(x, y);
+            if (index > buffer.Length - 1 || index < 0)
+                return this;
+
+            buffer[index] = @char;
 
             IsDirty = true;
             return this;
@@ -52,7 +58,11 @@ namespace RunawaySystems.Pong {
         /// x, and y are a local <see cref="ConsoleSpacePosition"/>.
         /// </summary>
         public RenderContext Set(int x, int y, char[] chars) {
-            chars.CopyTo(buffer, CalculateIndex(x, y));
+            int index = CalculateIndex(x, y);
+            if (index > buffer.Length - 1 || index < 0)
+                return this;
+
+            chars.CopyTo(buffer, index);
 
             IsDirty = true;
             return this;
@@ -64,6 +74,10 @@ namespace RunawaySystems.Pong {
         /// </summary>
         public RenderContext Set(int x, int y, string text) {
             int index = CalculateIndex(x, y);
+            if (index > buffer.Length - 1 || index < 0)
+                return this;
+
+
             text.CopyTo(0, buffer, index, text.Length);
 
             IsDirty = true;
@@ -71,15 +85,18 @@ namespace RunawaySystems.Pong {
         }
 
         /// <summary> Adds an <see cref="IRenderable"/>s sprite into the <see cref="buffer"/>. </summary>
-        public void Set(IRenderable renderable) {
+        public RenderContext Set(IRenderable renderable) {
             string[] spriteLines = renderable.Sprite.Split('\n');
 
             var localPosition = renderable.Position.ToConsoleSpacePosition(this);
 
-            for (int currentLine = 0; currentLine < spriteLines.Length; ++currentLine) 
-                Set(localPosition.X, localPosition.Y, spriteLines[currentLine]);
+            for (int currentLine = 0; currentLine < spriteLines.Length; ++currentLine) {
+                spriteLines[currentLine] = spriteLines[currentLine].TrimEnd(illegalNewlineCharacters);
+                Set(localPosition.X, localPosition.Y + currentLine, spriteLines[currentLine]);
+            }
 
             IsDirty = true;
+            return this;
         }
 
         /// <summary> Renders the <see cref="buffer"/> to the screen. </summary>

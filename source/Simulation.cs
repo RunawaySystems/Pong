@@ -6,8 +6,10 @@ namespace RunawaySystems.Pong {
     public static class Simulation {
         private static Engine clock;
         private static List<GameObject> gameObjects;
+        private static Queue<GameObject> gameObjectStagingBuffer;
 
         static Simulation() {
+            gameObjectStagingBuffer = new Queue<GameObject>();
             gameObjects = new List<GameObject>();
             clock = new Engine();
             clock.Tick += Tick;
@@ -25,7 +27,14 @@ namespace RunawaySystems.Pong {
             gameObjects.Remove(gameObject);
         }
 
+        private static void MoveStagedGameObjectsIntoLiveBuffer() {
+            while (gameObjectStagingBuffer.Count > 0)
+                gameObjects.Add(gameObjectStagingBuffer.Dequeue());
+        }
+
         private static void Tick(float timeDelta) {
+            MoveStagedGameObjectsIntoLiveBuffer();
+
             foreach (var gameobject in gameObjects) {
                 gameobject.OnSimulationTick(timeDelta);
             }

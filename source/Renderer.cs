@@ -13,6 +13,9 @@ namespace RunawaySystems.Pong {
         // state
         /// <summary> Holds each renderable object with their position last frame. </summary>
         private static List<IRenderable> renderableObjects;
+
+        /// <summary> we can't load objects directly into the renderable object list while the renderer is running. </summary>
+        private static Queue<IRenderable> renderableObjectStagingBuffer;
         public static (int X, int Y) GameplayRegion { get; private set; }
 
         /// <summary> Last drawn line number. </summary>
@@ -25,6 +28,7 @@ namespace RunawaySystems.Pong {
         public static RenderContext TerminalWindow;
 
         static Renderer() {
+            renderableObjectStagingBuffer = new Queue<IRenderable>();
             renderableObjects = new List<IRenderable>();
             clock = new Engine(targetFrequency: 60f);
             clock.Tick += Tick;
@@ -36,7 +40,7 @@ namespace RunawaySystems.Pong {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.Green;
 
-            PlayingFieldWindow = new RenderContext(0, 0, gameplayDividerLine - 1, Console.WindowWidth);
+            PlayingFieldWindow = new RenderContext(0, 0, gameplayDividerLine, Console.WindowWidth);
             //DrawPlusAtCenter(PlayingFieldWindow);
 
             TerminalWindow = new RenderContext(0, gameplayDividerLine, Console.WindowHeight - gameplayDividerLine, Console.WindowWidth);
@@ -49,7 +53,7 @@ namespace RunawaySystems.Pong {
         }
 
         public static void Register(IRenderable renderable) {
-            renderableObjects.Add(renderable);
+            renderableObjectStagingBuffer.Enqueue(renderable);
         }
 
         public static void UnRegister(IRenderable renderable) {
@@ -57,11 +61,16 @@ namespace RunawaySystems.Pong {
         }
 
         private static void Tick(float timeDelta) {
-
+            MoveStagesRenderablesIntoLiveBuffer();
             RenderPlayingField();
 
             if (TerminalWindow.IsDirty)
                 TerminalWindow.Draw();
+        }
+
+        private static void MoveStagesRenderablesIntoLiveBuffer() {
+            while (renderableObjectStagingBuffer.Count > 0)
+                renderableObjects.Add(renderableObjectStagingBuffer.Dequeue());
         }
 
         private static void RenderPlayingField() {
