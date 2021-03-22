@@ -6,7 +6,7 @@ namespace RunawaySystems.Pong {
     /// </summary>
     public struct WorldSpacePosition {
         public float X;
-        public float Y;
+        public float Y; // y+ is up
 
         public WorldSpacePosition(float x, float y) {
             X = x;

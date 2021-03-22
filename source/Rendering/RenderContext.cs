@@ -84,15 +84,15 @@ namespace RunawaySystems.Pong {
             return this;
         }
 
-        /// <summary> Adds an <see cref="IRenderable"/>s sprite into the <see cref="buffer"/>. </summary>
-        public RenderContext Set(IRenderable renderable) {
-            string[] spriteLines = renderable.Sprite.Split('\n');
+        /// <summary> Adds an <see cref="RenderableObject"/>s sprite into the <see cref="buffer"/>. </summary>
+        public RenderContext Set(RenderableObject renderable) {
+            string[] renderableLines = renderable.Graphics.Split('\n');
 
-            var localPosition = renderable.Position.ToConsoleSpacePosition(this);
+            var localPosition = renderable.Transform.Position.ToConsoleSpacePosition(this);
 
-            for (int currentLine = 0; currentLine < spriteLines.Length; ++currentLine) {
-                spriteLines[currentLine] = spriteLines[currentLine].TrimEnd(illegalNewlineCharacters);
-                Set(localPosition.X, localPosition.Y + currentLine, spriteLines[currentLine]);
+            for (int currentLine = 0; currentLine < renderableLines.Length; ++currentLine) {
+                renderableLines[currentLine] = renderableLines[currentLine].TrimEnd(illegalNewlineCharacters);
+                Set(localPosition.X, localPosition.Y + currentLine, renderableLines[currentLine]);
             }
 
             IsDirty = true;
@@ -111,7 +111,6 @@ namespace RunawaySystems.Pong {
 
             uint longestLineLength = 0;
             foreach (string line in lines) {
-                // do we need to strip new lines?
                 if (line.Length > longestLineLength)
                     longestLineLength = (uint)line.Length;
             }

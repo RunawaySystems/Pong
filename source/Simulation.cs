@@ -1,21 +1,24 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace RunawaySystems.Pong {
 
     /// <summary> Main game engine loop. </summary>
     public static class Simulation {
         private static Engine clock;
-        private static List<GameObject> gameObjects;
-        private static Queue<GameObject> gameObjectStagingBuffer;
+        private static ProtectedList<GameObject> gameObjects;
 
         static Simulation() {
-            gameObjectStagingBuffer = new Queue<GameObject>();
-            gameObjects = new List<GameObject>();
+            gameObjects = new ProtectedList<GameObject>();
             clock = new Engine();
             clock.Tick += Tick;
         }
 
         public static void Start() => clock.Start();
+
+        public static void SubscribeToSimulationLoop(Action<float> action) {
+            clock.Tick += action;
+        }
 
         /// <summary> Adds a <see cref="GameObject"/> to the <see cref="Simulation"/>. </summary>
         public static void Register(GameObject gameObject) {
@@ -27,17 +30,20 @@ namespace RunawaySystems.Pong {
             gameObjects.Remove(gameObject);
         }
 
-        private static void MoveStagedGameObjectsIntoLiveBuffer() {
-            while (gameObjectStagingBuffer.Count > 0)
-                gameObjects.Add(gameObjectStagingBuffer.Dequeue());
-        }
-
         private static void Tick(float timeDelta) {
-            MoveStagedGameObjectsIntoLiveBuffer();
+            if (gameObjects.QueuedCount() > 0)
+                gameObjects.Pump();
+
+            var physicsFrame = PhysicsManager.PhysicsSimulationTickAsync(timeDelta);
+
 
             foreach (var gameobject in gameObjects) {
                 gameobject.OnSimulationTick(timeDelta);
             }
+
+            physicsFrame.Wait();
         }
+
+
     }
 }

@@ -1,16 +1,15 @@
 ﻿
 using System.Text;
 using System.Numerics;
+using RunawaySystems.Pong.Geometry;
 
 namespace RunawaySystems.Pong {
 
-    public class Player : GameObject, IRenderable {
+    public class Player : GameObject {
+
+        // parameters
         const float movementIntensity = 0.01f;
         const float Friction = 0.02f;
-
-        public string Sprite { get; private set; }
-        public WorldSpacePosition Position { get; set; }
-        public Vector2 Velocity;
 
         private uint paddleLength;
         public uint PaddleLength {
@@ -24,27 +23,37 @@ namespace RunawaySystems.Pong {
                     builder.AppendLine("│░│");
                 builder.Append("└─┘");
 
-                Sprite = builder.ToString();
+                Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y - value - 2f);
+                physicsObject.Shape = new Rectangle(Vector2.Zero, new Vector2(1f, value + 2));
+                sprite.Graphics = builder.ToString();
             }
         }
 
+        // state
+        private Physics.PhysicsObject physicsObject;
+        private Rendering.TextSprite sprite;
+
         public Player(WorldSpacePosition position, uint paddleLength = 3) {
-            Position = position;
+            Transform.Position = position;
+            physicsObject = new Physics.PhysicsObject(Transform, @static: false, new Rectangle(Vector2.Zero, new Vector2(0f, -paddleLength -2 )));
+            physicsObject.Friction = Friction;
+            sprite = new Rendering.TextSprite(Transform);
             PaddleLength = paddleLength;
+
             InputManager.MovementInput += OnMovementInputReceived;
+           // physicsObject.CollisionDetected += OnCollision;
         }
 
         private void OnMovementInputReceived(float yMovementInput) {
-            Velocity = new Vector2(Velocity.X, Velocity.Y + (yMovementInput * movementIntensity));
+            physicsObject.Velocity = new Vector2(physicsObject.Velocity.X, physicsObject.Velocity.Y + (yMovementInput * movementIntensity));
+        }
+
+        private void OnCollision(Collision collision) {
+            physicsObject.Velocity = Vector2.Zero;
         }
 
         public override void OnSimulationTick(float timeDelta) {
-            float x = Position.X + (Velocity.X * timeDelta);
-            float y = Position.Y + (Velocity.Y * timeDelta);
-            Position = new WorldSpacePosition(x, y);
-            // clamp position to screen edges, drop velocity to 0 if we've hit an edge
-
-            Velocity /= timeDelta * Friction;
+            // TODO: clamp position to screen edges, drop velocity to 0 if we've hit an edge
         }
     }
 }

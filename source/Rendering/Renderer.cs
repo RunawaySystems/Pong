@@ -12,10 +12,8 @@ namespace RunawaySystems.Pong {
 
         // state
         /// <summary> Holds each renderable object with their position last frame. </summary>
-        private static List<IRenderable> renderableObjects;
+        private static ProtectedList<RenderableObject> renderableObjects;
 
-        /// <summary> we can't load objects directly into the renderable object list while the renderer is running. </summary>
-        private static Queue<IRenderable> renderableObjectStagingBuffer;
         public static (int X, int Y) GameplayRegion { get; private set; }
 
         /// <summary> Last drawn line number. </summary>
@@ -27,14 +25,28 @@ namespace RunawaySystems.Pong {
         public static RenderContext PlayingFieldWindow;
         public static RenderContext TerminalWindow;
 
+
+        /* characters for sub block rendering later
+         * ▘ Quadrant Upper Left 
+         * ▝ Quadrant Upper Right 
+         * ▖ Quadrant Lower Left 
+         * ▗ Quadrant Lower Right 
+         * ▛ Quadrant Upper Left and Upper Right and Lower Left 
+         * ▜ Quadrant Upper Left and Upper Right and Lower Right 
+         * ▙ Quadrant Upper Left and Lower Left and Lower Right 
+         * ▟ Quadrant Upper Right and Lower Left and Lower Right 
+         * ▚ Quadrant Upper Left and Lower Right 
+         * ▞ Quadrant Upper Right and Lower Left 
+         */
+
         static Renderer() {
-            renderableObjectStagingBuffer = new Queue<IRenderable>();
-            renderableObjects = new List<IRenderable>();
+            renderableObjects = new ProtectedList<RenderableObject>();
             clock = new Engine(targetFrequency: 60f);
             clock.Tick += Tick;
 
             Console.WindowWidth = 240;
             Console.WindowHeight = 67;
+            Console.OutputEncoding = Encoding.Unicode;
             gameplayDividerLine = (int)(Console.WindowHeight * gameplayAreaPercentage);
 
             Console.CursorVisible = false;
@@ -52,25 +64,20 @@ namespace RunawaySystems.Pong {
             clock.Start();
         }
 
-        public static void Register(IRenderable renderable) {
-            renderableObjectStagingBuffer.Enqueue(renderable);
+        public static void Register(RenderableObject renderable) {
+            renderableObjects.Add(renderable);
         }
 
-        public static void UnRegister(IRenderable renderable) {
+        public static void UnRegister(RenderableObject renderable) {
             renderableObjects.Remove(renderable);
         }
 
         private static void Tick(float timeDelta) {
-            MoveStagesRenderablesIntoLiveBuffer();
+            renderableObjects.Pump();
             RenderPlayingField();
 
             if (TerminalWindow.IsDirty)
                 TerminalWindow.Draw();
-        }
-
-        private static void MoveStagesRenderablesIntoLiveBuffer() {
-            while (renderableObjectStagingBuffer.Count > 0)
-                renderableObjects.Add(renderableObjectStagingBuffer.Dequeue());
         }
 
         private static void RenderPlayingField() {
@@ -80,7 +87,8 @@ namespace RunawaySystems.Pong {
 
             Geometry.Rectangle visibleWorldSpace = PlayingFieldWindow.GetRenderableArea();
             foreach (var renderable in renderableObjects) {
-                //if (visibleWorldSpace.Contains(renderable.Position))
+                // renderables kindof need an AABB for this check... worth it?
+                // if (visibleWorldSpace.Overlaps(renderable.Transform.Position))
                 PlayingFieldWindow.Set(renderable);
             }
 
